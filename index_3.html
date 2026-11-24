@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EquiPulse</title>
+<style>
+:root{--bg:#f3f7f8;--card:#fff;--line:#dce5e8;--ink:#0b1f2a;--muted:#55696f;--pri:#0a7c86;--onpri:#fff;--track:#e3ebed;--warn:#e59a12;--warnbg:#fff3da;--warnink:#6b4300;--bad:#b93232;--badbg:#fce6e6;--badink:#6e1414;--shadow:0 4px 14px #0b1f2a14}
+@media(prefers-color-scheme:dark){:root{--bg:#08141b;--card:#0f2430;--line:#1e3947;--ink:#e8f1f4;--muted:#93aab4;--pri:#45d1ce;--onpri:#05232a;--track:#1b3341;--warn:#f2b33d;--warnbg:#3a2c0b;--warnink:#ffe2a8;--bad:#ff8a8a;--badbg:#3f1717;--badink:#ffd6d6;--shadow:0 4px 14px #0006}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+[hidden]{display:none!important}
+.wrap{max-width:560px;margin:0 auto;padding:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+h1{font-size:2rem;margin:.4rem 0 0;text-align:center;letter-spacing:-.5px}
+h2{font-size:1.05rem;margin:0 0 10px}
+.muted{color:var(--muted)}.small{font-size:.82rem}.center{text-align:center}
+button{font:inherit;min-height:48px;border-radius:14px;border:1px solid var(--line);background:transparent;color:var(--ink);padding:0 16px;cursor:pointer;font-weight:600}
+button.pri{background:var(--pri);color:var(--onpri);border-color:var(--pri)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.grow{flex:1}
+input[type=number]{width:100%;min-height:52px;font:inherit;font-size:1.2rem;padding:0 14px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.err{color:var(--bad);font-size:.85rem;min-height:1.2em;margin:4px 0 10px}
+.cat{display:flex;gap:14px;align-items:center;width:100%;text-align:left;padding:14px;margin-bottom:10px;border-radius:22px;background:var(--card);min-height:76px}
+.cat[aria-checked=true]{border:2px solid var(--c);background:color-mix(in srgb,var(--c) 10%,var(--card))}
+.ico{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--c) 15%,transparent);color:var(--c);flex:none}
+.cat b{display:block}.cat span.d{color:var(--muted);font-weight:400;font-size:.9rem}
+header{display:flex;align-items:center;gap:8px;padding:8px 12px;position:sticky;top:0;background:var(--bg);z-index:5}
+header h3{margin:0;font-size:1.25rem;flex:1}
+.badge{font-size:.7rem;font-weight:700;max-width:104px;text-align:center;line-height:1.15;padding:4px 8px;border-radius:10px;border:1px solid var(--c);background:color-mix(in srgb,var(--c) 12%,transparent)}
+.seg{display:flex;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.seg button{flex:1;border:0;border-radius:0}.seg button[aria-pressed=true]{background:var(--pri);color:var(--onpri)}
+.pill{display:inline-flex;gap:6px;align-items:center;padding:4px 10px;border-radius:10px;font-size:.82rem;font-weight:700;background:var(--track);color:var(--muted)}
+.pill.ok{background:color-mix(in srgb,var(--pri) 14%,transparent);color:var(--pri)}.pill.bad{background:var(--badbg);color:var(--badink)}
+.banner{background:var(--ink);color:var(--bg);border-radius:14px;padding:12px 14px;font-weight:800;font-size:.85rem;margin-bottom:14px}
+.note{background:var(--track);border-radius:14px;padding:10px 12px;margin-bottom:14px;display:flex;gap:8px;align-items:flex-start}
+.note button{min-height:32px;padding:0 8px;border:0}
+.gwrap{position:relative;max-width:340px;margin:0 auto}
+.gwrap svg{width:100%;display:block}
+.read{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding-top:6%;pointer-events:none}
+.big{font-size:clamp(2.4rem,13vw,3.8rem);font-weight:600;letter-spacing:-1px;font-variant-numeric:tabular-nums;line-height:1}
+.dir{font-weight:800;margin:6px 0 10px;letter-spacing:.4px}
+.warncard{background:var(--warnbg);border:1px solid var(--warn);color:var(--warnink)}
+.warncard h2{color:var(--warnink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.chips button{min-height:40px;border-radius:12px}.chips button[aria-pressed=true]{background:var(--pri);color:var(--onpri);border-color:var(--pri)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stat{background:color-mix(in srgb,var(--track) 55%,transparent);border-radius:14px;padding:10px 12px}
+.stat .v{font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums}
+canvas{width:100%;height:210px;display:block}
+.chartbox{position:relative}.chartbox .empty{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:var(--muted);padding:0 24px}
+input[type=range]{width:100%;accent-color:var(--pri)}
+label.sw{display:flex;gap:10px;align-items:center;min-height:44px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+#setup{display:none!important}
+.v2{display:none}.v2.on{display:block;animation:fi .35s}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+#splash{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;background:var(--bg);z-index:50}#splash.on{display:flex}
+#splash svg{animation:pop 1.2s ease both}@keyframes pop{0%{transform:scale(.6) rotate(-20deg);opacity:0}70%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
+#splash h1{animation:fi 1s .5s both}#splash p{animation:fi 1s .9s both}
+.rcard{display:block;width:100%;text-align:left;padding:22px;margin-bottom:14px;border-radius:22px;background:var(--card);border:1px solid var(--line);transition:.2s}
+.rcard:hover{border-color:var(--pri);transform:translateY(-2px)}.rcard b{font-size:1.3rem}
+.t{width:100%;min-height:48px;margin:4px 0 10px;font:inherit;padding:0 12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.cols{display:grid;grid-template-columns:1fr;gap:14px}@media(min-width:800px){.cols{grid-template-columns:1fr 1fr}}
+.pi{display:block;width:100%;text-align:left;margin-bottom:8px;min-height:64px;padding:10px 14px}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:14px;z-index:99;max-width:90%}
+.code{font:700 2rem/1 monospace;letter-spacing:3px;text-align:center;padding:16px}
+dialog{border:1px solid var(--line);border-radius:20px;background:var(--card);color:var(--ink);max-width:420px}dialog button{width:100%;margin-top:10px}
+a{color:var(--pri)}
+</style>
+</head>
+<body>
+<div id="bar" class="row" style="padding:10px 16px" hidden><b class="grow" id="who"></b><button id="lo">Logout</button></div>
+<div id="splash"><svg width="120" height="120" viewBox="0 0 100 100"><path d="M25 80A38 38 0 1 1 75 80" fill="none" stroke="var(--pri)" stroke-width="8" stroke-linecap="round"/><path d="M16 36l12 6M84 36l-12 6" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/><path d="M50 52l18-20" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="52" r="8" fill="var(--pri)"/></svg><h1>EquiPulse</h1><p class="muted" style="font-size:1.2rem">Smart Balance Monitoring</p></div>
+<main id="roles" class="v2 wrap"><h1>Welcome</h1><p class="center muted">Choose how you use EquiPulse.</p>
+<button class="rcard" id="rDoc"><b>&#129658; Doctor</b><br><span class="muted">Monitor your patients' balance sessions and history.</span></button>
+<button class="rcard" id="rPat"><b>&#128100; Patient</b><br><span class="muted">Record your sessions and share them with your doctor.</span></button>
+<p class="center small muted">EquiPulse is a research prototype and does not provide medical diagnosis or treatment.</p></main>
+<main id="auth" class="v2 wrap"><button id="aBack">&#8592; Back</button><div class="card" id="authBox" style="margin-top:12px"></div></main>
+<main id="doc" class="v2 wrap" style="max-width:1000px"><h2 id="dname"></h2><div class="cols">
+<section class="card"><h2>My Patients</h2><div id="plist"></div></section>
+<section class="card"><h2>Connect a New Patient</h2><label>Patient Access Code</label><input class="t" id="cIn" placeholder="e.g. 3F9A1C7B2D" autocapitalize="characters"><button class="pri" id="cEnter">Enter</button><div id="cPrev" style="margin-top:12px"></div></section></div></main>
+<main id="pdet" class="v2 wrap" style="max-width:1000px"><button id="pdBack">&#8592; Back</button><div id="pdHead" class="card" style="margin-top:12px"></div><div class="cols"><section class="card"><h2>Sessions</h2><div id="sList"></div></section><section class="card"><h2>Session details</h2><div id="sStats"></div><canvas id="sChart"></canvas></section></div></main>
+<main id="plabel" class="v2 wrap"><h2>Choose your profile label</h2><button class="rcard" data-l="Normal"><b>Normal</b></button><button class="rcard" data-l="Parkinson Only"><b>Parkinson Only</b></button><button class="rcard" data-l="Cancer with Parkinson"><b>Cancer with Parkinson</b></button><p class="small muted">These are research profile labels, not medical diagnoses.</p></main>
+<main id="phome" class="v2 wrap"><div class="card"><h2 id="pname"></h2><p class="muted small" id="pcat"></p><button class="pri" id="openMon" style="width:100%">Open Monitoring</button></div>
+<div class="card"><h2>Your access code</h2><div id="codeBox"></div><div class="row"><button id="cCopy">Copy Code</button><button class="pri" id="cGen">Regenerate Code</button></div><p class="small muted">Your access code is private. Only share it with your authorized doctor.</p></div>
+<div class="card"><h2>Connected doctors</h2><div id="dList"></div></div><div class="card"><h2>My sessions</h2><div id="mySess"></div></div><p class="small muted center" id="store"></p></main>
+<dialog id="dlg"><h2>Logout</h2><button class="pri" id="keep">Logout and Keep My Data</button><button id="wipe">Delete My Data and Logout</button><button id="dx">Cancel</button></dialog>
+
+<main id="setup" class="wrap">
+  <div class="center" style="margin-top:18px"><svg width="84" height="84" viewBox="0 0 100 100" role="img" aria-label="EquiPulse logo"><path d="M25 80A38 38 0 1 1 75 80" fill="none" stroke="var(--pri)" stroke-width="8" stroke-linecap="round"/><path d="M16 36l12 6M84 36l-12 6" stroke="var(--warn)" stroke-width="6" stroke-linecap="round"/><path d="M50 52l18-20" stroke="var(--ink)" stroke-width="7" stroke-linecap="round"/><circle cx="50" cy="52" r="8" fill="var(--pri)"/></svg></div>
+  <h1>EquiPulse</h1>
+  <p class="center muted" style="margin:4px 0 22px;font-size:1.1rem">Smart Balance Monitoring</p>
+  <label for="age" style="font-weight:700">Age</label>
+  <input id="age" type="number" inputmode="numeric" min="1" max="120" placeholder="1 to 120" aria-describedby="ageErr">
+  <div id="ageErr" class="err" role="alert"></div>
+  <h2>Choose a profile label</h2>
+  <div id="cats" role="radiogroup" aria-label="Profile label"></div>
+  <button id="go" class="pri" style="width:100%;min-height:54px;font-size:1.05rem;margin-top:6px" disabled>Continue to Dashboard</button>
+  <p id="goHint" class="center small muted">Enter a valid age and choose a label to continue.</p>
+  <p class="center small muted" style="margin-top:22px">EquiPulse is a research prototype and does not provide medical diagnosis or treatment.</p>
+</main>
+
+<div id="dash" hidden>
+  <header>
+    <button id="back" aria-label="Back to setup" style="width:48px;padding:0;font-size:1.3rem">&#8592;</button>
+    <h3>EquiPulse</h3>
+    <div id="badge" class="badge"></div>
+  </header>
+  <div class="wrap" style="padding-top:4px">
+    <div class="row" style="margin-bottom:14px">
+      <div class="seg grow" role="group" aria-label="Data source"><button id="srcDev" aria-pressed="false">Device</button><button id="srcDemo" aria-pressed="true">Demo</button></div>
+      <button id="flip" aria-pressed="false" title="Swap LEFT and RIGHT">Flip L/R</button>
+    </div>
+    <div id="banner" class="banner" role="status" hidden></div>
+    <div id="notice" class="note" role="status" hidden><span id="noticeTx" class="grow"></span><button id="noticeX" aria-label="Dismiss message">&#10005;</button></div>
+
+    <section class="card" id="btCard" aria-label="Bluetooth connection">
+      <div class="row"><h2 class="grow" style="margin:0">Bluetooth</h2><span id="btPill" class="pill">Disconnected</span></div>
+      <p id="btDev" class="small muted" style="margin:8px 0"></p>
+      <div class="row"><button id="btConnect" class="pri">Scan and connect</button><button id="btDisc" disabled>Disconnect</button><button id="btRe" hidden>Reconnect</button></div>
+      <p class="small muted" style="margin-bottom:0">Uses Web Bluetooth (Chrome on Android). The browser shows its own device picker.</p>
+    </section>
+
+    <section class="card" aria-label="Live tilt">
+      <div class="gwrap"><svg id="gauge" viewBox="0 0 300 300" role="img" aria-label="Tilt gauge"></svg>
+        <div class="read"><div id="big" class="big">--</div><div id="dirTx" class="dir muted">NOT MONITORING</div><span id="srcPill" class="pill">No live data</span></div></div>
+    </section>
+
+    <section id="warn" class="card" aria-live="polite"></section>
+
+    <div class="row" style="margin-bottom:14px"><button id="main" class="pri grow" style="min-height:54px"></button><button id="reset">Reset Session</button></div>
+    <p id="why" class="small muted" style="margin-top:-6px"></p>
+
+    <section id="demoCard" class="card" aria-label="Demo controls"><h2>Demo signal</h2>
+      <p class="small muted" style="margin:0">Simulated angles for testing the screen without an ESP32. Nothing is ever sent to a device.</p>
+      <div id="modes" class="chips"></div>
+      <div id="manualRow" class="row" hidden><b id="manVal" style="min-width:64px">0.0°</b><input id="manual" type="range" min="-40" max="40" step="0.5" value="0" aria-label="Manual angle" class="grow"></div>
+    </section>
+
+    <section class="card" aria-label="Live tilt chart"><div class="row"><h2 class="grow" style="margin:0">Tilt over the last 60 seconds</h2><button id="clr" style="min-height:40px">Clear</button></div>
+      <div class="chartbox"><canvas id="chart"></canvas><div id="chartEmpty" class="empty">No data yet. Start monitoring to see the tilt trace.</div></div>
+      <p class="small muted" style="margin-bottom:0">Horizontal axis: elapsed session time (m:ss). Dashed lines mark ±20°.</p></section>
+
+    <section class="card" aria-label="Session statistics"><h2>This session</h2><div id="stats" class="stats"></div><div id="evs" class="small muted" style="margin-top:10px"></div></section>
+    <p class="center small muted">The 20° limit is a software monitoring threshold. It is not a medically validated fall-detection limit.<br>EquiPulse is a research prototype and does not provide medical diagnosis or treatment.</p>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+// ---- Config (same values as the Flutter app) ----
+const CFG={THRESH:20,HYST:1,DEADBAND:3,MAXABS:90,STALE_MS:2000,WINDOW_S:60,SPACING_S:.05,MAXPTS:1300,COOLDOWN:300,RETRIES:2,
+  // PLACEHOLDER UUIDs: must match the ESP32 firmware (see BLE protocol doc).
+  SVC:'45515550-0000-4000-8000-0000000000a1',TEL:'45515550-0000-4000-8000-0000000000a2',CMD:'45515550-0000-4000-8000-0000000000a3'};
+const CATS=[{id:'Normal',d:'General balance monitoring profile.',c:'#0a7c86',i:'M12 4a2 2 0 100 4 2 2 0 000-4zM6 10h12M12 10v5l-3 5M12 15l3 5'},
+ {id:'Cancer with Parkinson',d:'Profile label for a combined condition. Not a diagnosis.',c:'#4a63c7',i:'M12 21s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 11c0 5.500-7 10-7 10z'},
+ {id:'Parkinson Only',d:'Profile label for Parkinson only. Not a diagnosis.',c:'#7a55b8',i:'M3 12c3-6 6 6 9 0s6 6 9 0'}];
+const MODES=['Stable','Left tilt','Right tilt','Auto sweep','Manual'];
+const S={cat:null,src:'demo',phase:'idle',fresh:'inactive',angle:null,dir:null,warn:false,wdir:null,peak:null,unver:false,deliv:'idle',
+  maxP:0,maxN:0,has:false,count:0,hist:[],evs:[],mode:3,manual:0,invert:false,bt:'disconnected',invalid:0,t0:0,tAcc:0,lastOK:0,runAt:0};
+let T={on:false,dir:null},tickId=null,lastDevTs=null,modeStart=0;
+
+// ---- Pure logic ----
+const mapAngle=(a,inv)=>inv?0-a:a;
+const classify=a=>a<=-CFG.DEADBAND?'LEFT':a>=CFG.DEADBAND?'RIGHT':'STABLE';
+const exceeds=a=>Math.abs(a)>CFG.THRESH;
+const fmt=a=>{const s=a.toFixed(1);return(s==='-0.0'?'0.0':s)+'°'};
+const fmtS=a=>{const s=a.toFixed(1);return s==='-0.0'||s==='0.0'?'0.0°':(a>0?'+':'')+s+'°'};
+const mmss=s=>{s=Math.max(0,Math.floor(s));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const clock=d=>d.toTimeString().slice(0,8);
+function track(a){const m=Math.abs(a),side=a<0?'LEFT':'RIGHT';
+  if(!T.on){if(m>CFG.THRESH){T.on=true;T.dir=side;return{t:'on',dir:side}}return null}
+  if(m<=CFG.THRESH-CFG.HYST){const d=T.dir;T.on=false;T.dir=null;return{t:'off',dir:d}}
+  if(m>CFG.THRESH&&side!==T.dir){T.dir=side;return{t:'chg',dir:side}}return null}
+function demoVal(mode,t,man){const r=(x,s)=>x<=0?0:x>=s?1:(x/s)*(x/s)*(3-2*x/s);
+  switch(mode){case 0:return .6*Math.sin(Math.PI*t);case 1:return-26*r(t,4);case 2:return 26*r(t,4);
+    case 3:return 26*Math.sin(2*Math.PI*t/16);default:return man}}
+function parse(txt){let o;try{o=JSON.parse(txt)}catch(e){return{err:'json'}}
+  if(!o||typeof o!=='object'||Array.isArray(o)||o.v!==1||typeof o.type!=='string')return{err:'shape'};
+  if(o.type==='ack')return typeof o.ref==='string'?{ack:o}:{err:'ack'};
+  if(o.type!=='telemetry')return{err:'type'};
+  if(o.sensor_ok!==undefined&&typeof o.sensor_ok!=='boolean')return{err:'ok'};
+  if(o.timestamp_ms!==undefined&&!(Number.isInteger(o.timestamp_ms)&&o.timestamp_ms>=0))return{err:'ts'};
+  if(o.sensor_ok===false)return{fault:true,ts:o.timestamp_ms};
+  if(typeof o.angle_deg!=='number'||!isFinite(o.angle_deg)||Math.abs(o.angle_deg)>CFG.MAXABS)return{err:'angle'};
+  return{angle:o.angle_deg,ts:o.timestamp_ms}}
+
+// ---- Warning delivery: state-change only, dedupe, cooldown, retry ----
+const W={last:null,want:null,busy:false,tries:0,lastAt:0,timer:null};
+const wkey=m=>m.active?'a-'+m.direction:'c';
+function wsend(m){
+  if(!W.busy){
+    if(!m.active&&!(W.last&&W.last.active)){W.want=null;return}
+    if(W.last&&wkey(W.last)===wkey(m)){W.want=null;return}}
+  if(W.want&&wkey(W.want)===wkey(m))return;
+  W.want=m;W.tries=0;wpump()}
+function wpump(){if(W.busy||!W.want)return;clearTimeout(W.timer);
+  const wait=CFG.COOLDOWN-(Date.now()-W.lastAt);
+  if(wait>0)W.timer=setTimeout(wattempt,wait);else wattempt()}
+async function wattempt(){const m=W.want;if(!m||W.busy)return;W.busy=true;W.lastAt=Date.now();S.deliv='sending';render();
+  let ok=false;try{ok=await bleWrite({v:1,type:'tilt_warning',active:m.active,direction:m.active?m.direction:'NONE',angle_deg:Math.round(m.angle*10)/10||0,threshold_deg:CFG.THRESH})}catch(e){}
+  W.busy=false;const newer=W.want&&W.want!==m;
+  if(ok){W.last=m;if(!newer){W.want=null;S.deliv='written';render();return}
+    if(wkey(W.want)===wkey(m)){W.want=null;S.deliv='written'}else if(!W.want.active&&!m.active){W.want=null;S.deliv='idle'}else{W.tries=0;render();return wpump()}
+    render();return}
+  if(newer){W.tries=0;return wpump()}
+  if(++W.tries<=CFG.RETRIES){W.timer=setTimeout(wattempt,500);return}
+  S.deliv='failed';render()}
+const wreset=()=>{clearTimeout(W.timer);W.want=null;W.last=null;W.busy=false;W.tries=0};
+function reqWarn(active,dir,angle){
+  if(S.src==='device'&&S.bt==='connected')wsend({active,direction:dir,angle});
+  else if(active)S.deliv='local';else if(S.deliv==='local')S.deliv='idle'}
+
+// ---- Session pipeline ----
+const now=()=>S.tAcc+(S.phase==='running'?(performance.now()-S.t0)/1000:0);
+function ingest(a){S.lastOK=performance.now();const t=now();
+  const h=S.hist;if(!h.length||t-h[h.length-1].t>=CFG.SPACING_S){h.push({t,a});let c=0;while(c<h.length&&t-h[c].t>CFG.WINDOW_S)c++;c=Math.max(c,h.length-CFG.MAXPTS);if(c>0)h.splice(0,c)}
+  const tr=track(a);S.angle=a;S.dir=classify(a);S.fresh='live';S.has=true;S.unver=false;S.maxP=Math.max(S.maxP,a);S.maxN=Math.min(S.maxN,a);
+  if(tr){const d=new Date();
+    if(tr.t==='on'||tr.t==='chg'){if(tr.t==='chg')closeEv(t);S.count++;S.evs.push({at:d,dir:tr.dir,peak:a,s:t,e:null});S.peak=a;reqWarn(true,tr.dir,a)}
+    else{closeEv(t);S.peak=null;reqWarn(false,tr.dir,a)}}
+  else if(T.on&&Math.abs(a)>Math.abs(S.peak||0)){S.peak=a;const e=S.evs[S.evs.length-1];if(e&&e.e===null)e.peak=a}
+  S.warn=T.on;S.wdir=T.dir;sched()}
+function closeEv(t){const e=S.evs[S.evs.length-1];if(e&&e.e===null){e.e=t;e.end=new Date()}}
+function halt(phase){clearInterval(tickId);tickId=null;if(S.phase==='running')S.tAcc=now();
+  const had=T.on;if(had){closeEv(now())}const last=S.angle||0;T={on:false,dir:null};
+  Object.assign(S,{phase,fresh:'inactive',angle:null,dir:null,warn:false,wdir:null,peak:null,unver:false});
+  if(had)reqWarn(false,'NONE',last)}
+function clearData(){S.hist=[];S.evs=[];S.maxP=S.maxN=0;S.has=false;S.count=0;S.angle=null;S.dir=null;S.warn=false;S.peak=null;S.deliv='idle';S.invalid=0;S.tAcc=0;T={on:false,dir:null};lastDevTs=null}
+const blocker=()=>S.src==='demo'||S.bt==='connected'?null:'Connect to an EquiPulse device first, or switch to Demo.';
+function start(){const b=blocker();if(b)return notice(b);clearData();begin();bleMon('started')}
+function begin(){S.phase='running';S.t0=performance.now();S.runAt=performance.now();S.lastOK=0;S.fresh=S.src==='demo'?'live':'waiting';notice(null);
+  if(S.src==='demo'){modeStart=now();tickId=setInterval(()=>ingest(demoVal(S.mode,now()-modeStart,S.manual)),50)}render()}
+function pause(){if(S.phase!=='running')return;const had=T.on;halt('paused');if(had)notice('Monitoring paused while a warning was active.');bleMon('paused');render()}
+function resume(){const b=blocker();if(b)return notice(b);begin();bleMon('started')}
+function resetS(){if(S.phase!=='idle')halt('idle');clearData();S.phase='idle';S.fresh='inactive';bleMon('stopped');render()}
+function notice(t){$('notice').hidden=!t;$('noticeTx').textContent=t||''}
+setInterval(()=>{if(S.phase!=='running'||S.src!=='device'||S.fresh==='fault'||S.fresh==='stale'||S.fresh==='inactive')return;
+  const ref=S.lastOK||S.runAt;if(performance.now()-ref>CFG.STALE_MS){S.fresh='stale';S.angle=null;S.dir=null;S.unver=S.warn;render()}},250);
+
+// ---- Web Bluetooth (device mode). Same protocol as the Flutter app. Untested on real hardware. ----
+let dev=null,cmdC=null,telC=null,buf='';const dec=new TextDecoder();
+async function bleWrite(obj){if(!cmdC||!dev||!dev.gatt.connected)return false;
+  const b=new TextEncoder().encode(JSON.stringify(obj));
+  try{await(cmdC.writeValueWithResponse?cmdC.writeValueWithResponse(b):cmdC.writeValue(b));return true}catch(e){return false}}
+function bleMon(state){if(S.src==='device'&&S.bt==='connected')bleWrite({v:1,type:'monitoring',state})}
+function setBt(s,msg){S.bt=s;$('btDev').textContent=msg||(dev&&s==='connected'?dev.name+' ('+dev.id.slice(0,12)+')':'');render()}
+async function btConnect(){
+  if(!navigator.bluetooth)return notice('Web Bluetooth is not available in this browser. Use Chrome on Android, or try Demo mode.');
+  try{setBt('connecting');dev=await navigator.bluetooth.requestDevice({filters:[{services:[CFG.SVC]}]});
+    dev.addEventListener('gattserverdisconnected',onLost);const srv=await dev.gatt.connect();const svc=await srv.getPrimaryService(CFG.SVC);
+    telC=await svc.getCharacteristic(CFG.TEL);cmdC=await svc.getCharacteristic(CFG.CMD);buf='';
+    telC.addEventListener('characteristicvaluechanged',e=>{const v=e.target.value;onChunk(new Uint8Array(v.buffer,v.byteOffset,v.byteLength))});
+    await telC.startNotifications();setBt('connected')}
+  catch(e){setBt('disconnected');notice(e&&e.name==='NotFoundError'?'No device selected.':'Could not connect: '+(e&&e.message||e))}}
+function onLost(){wreset();const was=S.phase==='running'&&S.src==='device',had=T.on;
+  if(was){halt('interrupted');S.unver=had;notice(had?'Connection lost during a warning. The warning state is unknown.':'Connection lost. Monitoring stopped. Reconnect, then resume.')}
+  setBt('connectionLost','Last device: '+(dev?dev.name:''))}
+async function btDisc(){if(S.phase==='running')pause();await new Promise(r=>setTimeout(r,500));if(dev&&dev.gatt.connected){dev.removeEventListener('gattserverdisconnected',onLost);dev.gatt.disconnect()}wreset();setBt('disconnected')}
+async function btRe(){if(!dev)return btConnect();try{setBt('connecting');await dev.gatt.connect();dev.removeEventListener('gattserverdisconnected',onLost);dev.addEventListener('gattserverdisconnected',onLost);
+  const svc=await dev.gatt.getPrimaryService(CFG.SVC);telC=await svc.getCharacteristic(CFG.TEL);cmdC=await svc.getCharacteristic(CFG.CMD);buf='';
+  telC.addEventListener('characteristicvaluechanged',e=>{const v=e.target.value;onChunk(new Uint8Array(v.buffer,v.byteOffset,v.byteLength))});await telC.startNotifications();setBt('connected');
+  if(S.phase==='interrupted')notice('Reconnected. Press Resume to continue monitoring.')}catch(e){setBt('connectionLost');notice('Reconnect failed. Use Scan and connect.')}}
+// Framing: one JSON object per notification preferred; fragments and multiple objects tolerated (flat objects only).
+function onChunk(u){buf+=dec.decode(u,{stream:true});let s;
+  while((s=buf.indexOf('{'))>=0){const e=buf.indexOf('}',s);
+    if(e<0){buf=buf.length-s>1024?'':buf.slice(s);return}
+    const n=buf.indexOf('{',s+1);if(n>0&&n<e){buf=buf.slice(n);S.invalid++;continue}
+    handle(buf.slice(s,e+1));buf=buf.slice(e+1)}}
+function handle(txt){if(S.src!=='device')return;const r=parse(txt);
+  if(r.err){if(S.phase==='running'){S.invalid++;sched()}return}
+  if(r.ack){if(r.ack.ref==='tilt_warning'&&S.deliv==='written'&&r.ack.active===S.warn){S.deliv='acknowledged';render()}return}
+  if(S.phase!=='running')return;
+  if(r.ts!==undefined&&r.ts===lastDevTs)return;lastDevTs=r.ts===undefined?null:r.ts;
+  if(r.fault){S.fresh='fault';S.angle=null;S.dir=null;S.unver=S.warn;return render()}
+  ingest(mapAngle(r.angle,S.invert))}
+
+// ---- Rendering ----
+const NS='http://www.w3.org/2000/svg',K=3;
+const pol=(t,r)=>{const a=t*K*Math.PI/180;return[150+r*Math.sin(a),150-r*Math.cos(a)]};
+function arcD(t1,t2,r){const[a,b]=pol(t1,r),[c,d]=pol(t2,r);return`M${a} ${b}A${r} ${r} 0 ${Math.abs(t2-t1)*K>180?1:0} ${t2>t1?1:0} ${c} ${d}`}
+function mk(tag,at,p){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);p.appendChild(e);return e}
+const g=$('gauge');let vArc,knob,knobIn;
+(function buildGauge(){const R=100,sw=16;
+  mk('path',{d:arcD(-40,40,R),fill:'none',stroke:'var(--track)','stroke-width':sw,'stroke-linecap':'round'},g);
+  for(const[a,b]of[[-40,-20],[20,40]])mk('path',{d:arcD(a,b,R),fill:'none',stroke:'var(--warn)','stroke-opacity':.3,'stroke-width':sw},g);
+  mk('path',{d:arcD(-20,20,R),fill:'none',stroke:'var(--pri)','stroke-opacity':.22,'stroke-width':sw},g);
+  for(let t=-40;t<=40;t+=5){const th=Math.abs(t)===20,[x1,y1]=pol(t,R+11),[x2,y2]=pol(t,R+(th?24:t%10===0?19:16));
+    mk('line',{x1,y1,x2,y2,stroke:th?'var(--warn)':'var(--muted)','stroke-width':th?3:1.4,'stroke-linecap':'round'},g)}
+  for(const[t,tx,c]of[[0,'0','var(--muted)'],[-20,'-20°','var(--warn)'],[20,'+20°','var(--warn)']]){const[x,y]=pol(t,R+36);
+    const e=mk('text',{x,y,'text-anchor':'middle','dominant-baseline':'middle','font-size':12,'font-weight':700,fill:c},g);e.textContent=tx}
+  for(const[x,tx]of[[70,'LEFT'],[230,'RIGHT']]){const e=mk('text',{x,y:262,'text-anchor':'middle','font-size':11,'font-weight':600,fill:'var(--muted)'},g);e.textContent=tx}
+  vArc=mk('path',{fill:'none','stroke-width':9,'stroke-linecap':'round'},g);
+  knob=mk('circle',{r:12},g);knobIn=mk('circle',{r:6,fill:'var(--card)'},g)})();
+const srcPill=(t,c)=>{const e=$('srcPill');e.textContent=t;e.className='pill '+c};
+function renderGauge(){const a=S.angle,live=S.fresh==='live'&&a!==null;
+  vArc.style.display=knob.style.display=knobIn.style.display=live?'':'none';
+  if(live){const c=Math.max(-40,Math.min(40,a)),col=exceeds(a)?'var(--warn)':'var(--pri)',[x,y]=pol(c,100);
+    vArc.setAttribute('d',Math.abs(c)<.2?'':arcD(0,c,100));vArc.setAttribute('stroke',col);knob.setAttribute('cx',x);knob.setAttribute('cy',y);knobIn.setAttribute('cx',x);knobIn.setAttribute('cy',y);knob.setAttribute('fill',col)}
+  const m={live:[fmt(a||0),S.dir],stale:['--','NO RECENT DATA'],fault:['--','SENSOR FAULT'],waiting:['--','WAITING FOR DATA'],inactive:['--','NOT MONITORING']}[S.fresh];
+  $('big').textContent=m[0];const d=$('dirTx');d.textContent=m[1];d.style.color=live?(exceeds(a)?'var(--warn)':'var(--pri)'):'var(--muted)';
+  $('big').style.color=live?'var(--ink)':'var(--muted)';
+  g.setAttribute('aria-label',live?`Tilt angle ${a.toFixed(1)} degrees, ${S.dir}, ${exceeds(a)?'threshold exceeded':'within threshold'}`:m[1]);
+  if(S.src==='demo')srcPill('Demo data, not a sensor','');else if(live)srcPill('Live from device','ok');else srcPill('No live data','')}
+function renderWarn(){const w=$('warn');w.className='card';let h='';
+  const dl={sending:'Sending warning to the device.',written:'Sent to the device. The device has not confirmed it yet.',acknowledged:'The device acknowledged the warning.',local:'Demo reading. Nothing was sent to a device.'};
+  if(S.warn){w.className='card warncard';const a=S.angle!==null?S.angle:S.peak;
+    h=`<h2>&#9888; Tilt Threshold Exceeded</h2><div style="font-size:1.3rem;font-weight:700">WARNING: ${S.wdir} — ${fmt(a)}</div>`+
+      (S.peak!==null?`<div>Peak ${fmt(S.peak)}. Limit ±${CFG.THRESH}°.</div>`:'')+
+      (S.deliv==='failed'?`<div class="note" style="background:var(--badbg);color:var(--badink);margin:10px 0 0"><span class="grow">The warning could not be delivered to the device.</span><button id="retry">Retry</button></div>`:
+       dl[S.deliv]?`<div style="margin-top:10px">${dl[S.deliv]}</div>`:'')}
+  else if(S.unver){w.className='card warncard';h='<div>Tilt state unknown. The last reading was beyond the limit and no new reading has confirmed it is back in range.</div>'}
+  else{const e=S.evs[S.evs.length-1];
+    if(S.deliv==='failed')h=`<div class="note" style="background:var(--badbg);color:var(--badink);margin:0"><span class="grow">The last warning update could not be delivered to the device.</span><button id="retry">Retry</button></div>`;
+    else if(e&&e.e!==null&&S.fresh==='live')h=`<div>&#10003; Warning cleared. Tilt is back within ±${CFG.THRESH}° at ${clock(e.end)}.</div>`;
+    else h=`<div class="muted">${S.phase==='running'&&S.fresh==='live'?'Within the ±'+CFG.THRESH+'° monitoring threshold.':S.phase==='running'?'Threshold check is waiting for a valid reading.':'Threshold check is off. Start monitoring to enable it.'}</div>`}
+  w.innerHTML=h;const r=$('retry');if(r)r.onclick=()=>{W.tries=0;wpump()}}
+function renderStats(){const a=S.angle,st=[['Current angle',a===null?'--':fmtS(a)],['Max positive (right)',S.has?fmtS(S.maxP):'--'],['Max negative (left)',S.has?fmtS(S.maxN):'--'],
+  ['Direction',a===null?'--':S.dir],['Threshold events',S.count],['Bluetooth',{disconnected:'Disconnected',connecting:'Connecting',connected:'Connected',connectionLost:'Connection Lost'}[S.bt]]];
+  $('stats').innerHTML=st.map(x=>`<div class="stat"><div class="small muted">${x[0]}</div><div class="v">${x[1]}</div></div>`).join('');
+  const ev=S.evs.slice(-5).reverse();$('evs').innerHTML=ev.length?ev.map(e=>`${clock(e.at)} ${e.dir} peak ${fmt(e.peak)} — ${e.e===null?'active':(e.e-e.s).toFixed(1)+' s'}`).join('<br>'):'No threshold events in this session.'}
+const cv=$('chart'),cx=cv.getContext('2d');
+function renderChart(){const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;if(!w)return;
+  if(cv.width!==Math.round(w*dpr)){cv.width=Math.round(w*dpr);cv.height=Math.round(h*dpr)}
+  cx.setTransform(dpr,0,0,dpr,0,0);cx.clearRect(0,0,w,h);const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim();
+  const L=44,B=24,Y=45,last=S.hist.length?S.hist[S.hist.length-1].t:0,maxX=Math.max(CFG.WINDOW_S,last),minX=maxX-CFG.WINDOW_S;
+  const X=t=>L+(t-minX)/CFG.WINDOW_S*(w-L-6),Yp=a=>6+(Y-a)/(2*Y)*(h-B-6);
+  cx.font='11px system-ui';cx.textBaseline='middle';cx.textAlign='right';
+  for(const a of[-40,-20,0,20,40]){cx.strokeStyle=col('--line');cx.lineWidth=a===0?1.5:.8;cx.setLineDash([]);cx.beginPath();cx.moveTo(L,Yp(a));cx.lineTo(w-6,Yp(a));cx.stroke();cx.fillStyle=col('--muted');cx.fillText(fmtS(a),L-6,Yp(a))}
+  cx.textAlign='center';for(let t=Math.ceil(minX/15)*15;t<=maxX;t+=15)if(t>=0){cx.fillStyle=col('--muted');cx.fillText(mmss(t),X(t),h-10)}
+  cx.strokeStyle=col('--warn');cx.lineWidth=1.5;cx.setLineDash([6,4]);for(const a of[-20,20]){cx.beginPath();cx.moveTo(L,Yp(a));cx.lineTo(w-6,Yp(a));cx.stroke()}cx.setLineDash([]);
+  if(S.hist.length){cx.save();cx.beginPath();cx.rect(L,0,w-L,h-B);cx.clip();cx.strokeStyle=col('--pri');cx.lineWidth=2.2;cx.beginPath();
+    S.hist.forEach((p,i)=>i?cx.lineTo(X(p.t),Yp(p.a)):cx.moveTo(X(p.t),Yp(p.a)));cx.stroke();cx.restore()}
+  $('chartEmpty').hidden=S.hist.length>0}
+function render(){
+  $('srcDev').setAttribute('aria-pressed',S.src==='device');$('srcDemo').setAttribute('aria-pressed',S.src==='demo');
+  $('btCard').hidden=S.src!=='device';$('demoCard').hidden=S.src!=='demo';$('flip').setAttribute('aria-pressed',S.invert);
+  const b=$('banner');b.hidden=S.src!=='demo';b.textContent='DEMO — NO DEVICE CONNECTED';
+  const p=$('btPill');p.textContent={disconnected:'Disconnected',connecting:'Connecting',connected:'Connected',connectionLost:'Connection Lost'}[S.bt];p.className='pill '+(S.bt==='connected'?'ok':S.bt==='connectionLost'?'bad':'');
+  $('btConnect').disabled=S.bt==='connecting'||S.bt==='connected';$('btDisc').disabled=S.bt!=='connected'&&S.bt!=='connecting';$('btRe').hidden=!(dev&&(S.bt==='connectionLost'||S.bt==='disconnected'));
+  const can=!blocker(),m=$('main');
+  m.textContent={idle:'Start Monitoring',running:'Pause Monitoring',paused:'Resume Monitoring',interrupted:'Resume Monitoring'}[S.phase];m.disabled=S.phase!=='running'&&!can;
+  m.onclick=S.phase==='idle'?start:S.phase==='running'?pause:resume;$('reset').disabled=S.phase==='idle'&&!S.has;$('why').textContent=can?'':'Connect to an EquiPulse device to start, or switch to Demo.';
+  $('modes').innerHTML=MODES.map((n,i)=>`<button aria-pressed="${S.mode===i}" data-m="${i}">${n}</button>`).join('');
+  $('manualRow').hidden=S.mode!==4;$('manVal').textContent=fmtS(S.manual);
+  renderGauge();renderWarn();renderStats();renderChart()}
+let raf=0;function sched(){if(!raf)raf=requestAnimationFrame(()=>{raf=0;render()})}
+
+// ---- Wiring ----
+$('cats').innerHTML=CATS.map((c,i)=>`<button class="cat" role="radio" aria-checked="false" data-i="${i}" style="--c:${c.c}"><span class="ico"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${c.i}"/></svg></span><span class="grow"><b>${c.id}</b><span class="d">${c.d}</span></span></button>`).join('');
+function ageErr(){const v=$('age').value.trim();if(!v)return'Enter your age.';const n=Number(v);return Number.isInteger(n)&&n>=1&&n<=120?null:'Enter an age between 1 and 120.'}
+let touched=false;function chk(){const e=ageErr();$('ageErr').textContent=touched&&e?e:'';const ok=!e&&S.cat!==null;$('go').disabled=!ok;$('goHint').hidden=ok}
+$('age').oninput=()=>{touched=true;chk()};$('age').onblur=()=>{touched=true;chk()};
+$('cats').onclick=e=>{const b=e.target.closest('.cat');if(!b)return;S.cat=CATS[b.dataset.i];touched=true;document.querySelectorAll('.cat').forEach(x=>x.setAttribute('aria-checked',x===b));chk()};
+$('go').onclick=()=>{$('badge').textContent=S.cat.id;$('badge').style.setProperty('--c',S.cat.c);$('badge').setAttribute('aria-label','Profile label: '+S.cat.id);$('setup').hidden=true;$('dash').hidden=false;scrollTo(0,0);render()};
+$('back').onclick=()=>{if(S.phase!=='idle'&&!confirm('Return to setup? The current session will end and its statistics will be cleared.'))return;
+  if(S.phase!=='idle'){halt('idle');bleMon('stopped')}clearData();S.phase='idle';S.fresh='inactive';notice(null);$('dash').hidden=true;$('setup').hidden=false;chk()};
+function setSrc(s){if(s===S.src)return;if(S.phase!=='idle')halt('idle');clearData();S.phase='idle';S.fresh='inactive';S.src=s;notice(null);render()}
+$('srcDev').onclick=()=>setSrc('device');$('srcDemo').onclick=()=>setSrc('demo');
+$('flip').onclick=()=>{S.invert=!S.invert;render()};
+$('modes').onclick=e=>{const b=e.target.closest('button');if(!b)return;S.mode=+b.dataset.m;modeStart=now();render()};
+$('manual').oninput=e=>{S.manual=+e.target.value;S.mode=4;render()};
+$('reset').onclick=resetS;$('clr').onclick=()=>{S.hist=[];render()};$('noticeX').onclick=()=>notice(null);
+$('btConnect').onclick=btConnect;$('btDisc').onclick=btDisc;$('btRe').onclick=btRe;
+addEventListener('resize',sched);document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.src==='device'&&S.bt==='connected'&&dev&&!dev.gatt.connected)onLost()});
+chk();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.111.0"></script>
+<script>
+// ===== EquiPulse cloud layer (accounts, pairing, session storage) =====
+// Enter your PUBLIC Supabase values here. Never put the service-role key in this file.
+const SUPABASE_URL='https://fvugxeczjgtzkbrywuqy.supabase.co', SUPABASE_ANON_KEY='sb_publishable_NLP4mZLNEPwtzHbUISC9FA_6V41P4t5', STORAGE_SOFT_LIMIT_MB=50;
+const cfgOK=!SUPABASE_URL.startsWith('YOUR_'), sb=cfgOK?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+const LS={get:k=>{try{return localStorage.getItem(k)}catch(e){return null}},set:(k,v)=>{try{localStorage.setItem(k,v)}catch(e){}},del:k=>{try{localStorage.removeItem(k)}catch(e){}}};
+let P=null,ROLE=null,MODE='login',codeInfo=null,SESS=null,lastDocs=0;
+const V=['splash','roles','auth','doc','pdet','phome','plabel'];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function show(id){V.forEach(v=>$(v).classList.toggle('on',v===id));$('dash').hidden=id!=='mon';$('bar').hidden=!P||['splash','roles','auth','mon'].includes(id);if(P)$('who').textContent=P.full_name+' ('+P.role+')';scrollTo(0,0)}
+function toast(m){const e=document.createElement('div');e.className='toast';e.setAttribute('role','status');e.textContent=m;document.body.appendChild(e);setTimeout(()=>e.remove(),4500)}
+$('rDoc').onclick=()=>authView('doctor');$('rPat').onclick=()=>authView('patient');$('aBack').onclick=()=>show('roles');
+function authView(r){ROLE=r;MODE='login';renderAuth();show('auth')}
+function renderAuth(){const d=ROLE==='doctor',reg=MODE==='register';
+ $('authBox').innerHTML=`<h2>${d?'Doctor':'Patient'} ${reg?'registration':'login'}</h2>`+(reg?'<label>Full name</label><input class="t" id="fn" autocomplete="name">':'')+`<label>Email</label><input class="t" id="em" type="email" autocomplete="email"><label>Password</label><input class="t" id="pw" type="password" autocomplete="${reg?'new-password':'current-password'}">`+(reg?'<label>Age</label><input class="t" id="ag" type="number" min="1" max="120">'+(d?'<label>Clinic name</label><input class="t" id="cl">':''):'')+`<div id="aerr" class="err" role="alert"></div><button class="pri" id="asub" style="width:100%">${reg?'Create account':'Log in'}</button><p class="center small"><a href="#" id="sw">${reg?'I already have an account':'Create a new account'}</a></p>`;
+ $('sw').onclick=e=>{e.preventDefault();MODE=reg?'login':'register';renderAuth()};$('asub').onclick=doAuth}
+async function doAuth(){const g=i=>$(i)?$(i).value.trim():'',err=m=>$('aerr').textContent=m;
+ if(!cfgOK)return err('Cloud is not configured yet. Set SUPABASE_URL and SUPABASE_ANON_KEY in the script.');
+ const em=g('em'),pw=$('pw').value;if(!em||pw.length<6)return err('Enter an email and a password of at least 6 characters.');
+ let meta=null;if(MODE==='register'){const age=+g('ag'),fn=g('fn');if(!fn||!(age>=1&&age<=120)||(ROLE==='doctor'&&!g('cl')))return err('Fill in all fields. Age must be 1 to 120.');meta={role:ROLE,full_name:fn,age,clinic:g('cl')||null}}
+ $('asub').disabled=true;
+ const r=MODE==='register'?await sb.auth.signUp({email:em,password:pw,options:{data:meta}}):await sb.auth.signInWithPassword({email:em,password:pw});
+ $('asub').disabled=false;if(r.error)return err(r.error.message);
+ if(!r.data.session)return err('Account created. Confirm your email, then log in.');
+ await enter(r.data.session.user)}
+async function enter(u){let{data:p}=await sb.from('profiles').select('*').eq('id',u.id).maybeSingle();
+ if(!p){const m=u.user_metadata||{};if(!m.role){await sb.auth.signOut();toast('Profile data is missing. Please register again.');return show('roles')}
+  const i=await sb.from('profiles').insert({id:u.id,role:m.role,full_name:m.full_name,age:m.age,clinic:m.clinic||null}).select().single();if(i.error)return toast(i.error.message);p=i.data}
+ if(ROLE&&p.role!==ROLE){await sb.auth.signOut();toast('This is a '+p.role+' account. Choose '+p.role.toUpperCase()+'.');return show('roles')}
+ P=p;ROLE=p.role;await flushPending();P.role==='doctor'?docHome():patHome()}
+// ---------- Doctor ----------
+function docHome(){show('doc');$('dname').textContent='Dr. '+P.full_name+(P.clinic?' | '+P.clinic:'');realtime();loadPts()}
+async function loadPts(){const[a,b]=await Promise.all([sb.from('profiles').select('id,full_name,age,category').eq('role','patient'),sb.from('sessions').select('patient_id,started_at,status,updated_at').order('started_at',{ascending:false}).limit(300)]);
+ if(a.error)return toast(a.error.message);const last={};(b.data||[]).forEach(s=>{if(!last[s.patient_id])last[s.patient_id]=s});
+ $('plist').innerHTML=a.data.length?a.data.map(p=>{const s=last[p.id],live=s&&s.status==='running'&&Date.now()-new Date(s.updated_at)<30000;
+  return`<button class="pi" data-id="${p.id}"><b>${esc(p.full_name)}</b> <span class="muted small">Age ${esc(p.age)} | ${esc(p.category||'No label')}</span><br><span class="small muted">${s?'Last session '+new Date(s.started_at).toLocaleString():'No sessions yet'}</span>${live?' <span class="pill ok">Monitoring now</span>':''}</button>`}).join(''):'<p class="muted">No patients yet. Enter a patient access code on the right.</p>'}
+setInterval(()=>{if(P&&$('doc').classList.contains('on'))loadPts()},15000);
+$('plist').onclick=e=>{const b=e.target.closest('.pi');if(b)openPat(b.dataset.id)};$('pdBack').onclick=()=>{show('doc');loadPts()};
+$('cEnter').onclick=async()=>{const c=$('cIn').value.trim();if(!c)return;const{data,error}=await sb.rpc('preview_code',{p_code:c});
+ if(error||!data||!data.length){$('cPrev').innerHTML='<p class="err">Invalid or expired code.</p>';return}
+ const p=data[0];$('cPrev').innerHTML=`<div class="stat"><b>${esc(p.full_name)}</b><br>Age ${esc(p.age)} | ${esc(p.category||'No label yet')}</div><p class="small muted">Connect this patient to your account?</p><button class="pri" id="cGo">Connect Patient</button>`;
+ $('cGo').onclick=async()=>{const r=await sb.rpc('redeem_code',{p_code:c});if(r.error)return toast(r.error.message);toast('Patient connected.');$('cIn').value='';$('cPrev').innerHTML='';loadPts()}};
+async function openPat(id,keep){curP=id;if(!keep)show('pdet');const{data:p}=await sb.from('profiles').select('*').eq('id',id).single();if(!p)return;
+ $('pdHead').innerHTML=`<h2>${esc(p.full_name)}</h2><p class="muted">Age ${esc(p.age)} | ${esc(p.category||'No label')} (research label, not a diagnosis)</p>`;
+ const{data}=await sb.from('sessions').select('id,started_at,status,duration_s,source').eq('patient_id',id).order('started_at',{ascending:false}).limit(100);
+ $('sList').innerHTML=data&&data.length?data.map(s=>`<button class="pi" data-s="${s.id}">${new Date(s.started_at).toLocaleString()}<br><span class="small muted">${esc(s.source)} | ${esc(s.status)} | ${mmss(s.duration_s||0)}</span></button>`).join(''):'<p class="muted">No saved sessions yet.</p>';
+ $('sList').onclick=e=>{const b=e.target.closest('.pi');if(b)openSess(b.dataset.s)};if(!keep){$('sStats').innerHTML='';if(data&&data.length)openSess(data[0].id);else drawSess([])}}
+async function openSess(sid){curS=sid;const{data:s}=await sb.from('sessions').select('*').eq('id',sid).single();if(!s)return;
+ const ev=(s.events||[]).map(e=>`${new Date(e.at).toLocaleTimeString()} ${esc(e.d)} peak ${fmt(e.p)} for ${e.s} s`).join('<br>')||'No threshold events.';
+ $('sStats').innerHTML=`<div class="stats"><div class="stat"><div class="small muted">Max right</div><div class="v">${fmtS(s.max_pos||0)}</div></div><div class="stat"><div class="small muted">Max left</div><div class="v">${fmtS(s.max_neg||0)}</div></div><div class="stat"><div class="small muted">Threshold events</div><div class="v">${s.event_count||0}</div></div><div class="stat"><div class="small muted">Duration</div><div class="v">${mmss(s.duration_s||0)}</div></div></div><p class="small muted">Started ${new Date(s.started_at).toLocaleString()}${s.ended_at?'<br>Ended '+new Date(s.ended_at).toLocaleString():''}<br>Source ${esc(s.source)} | Status ${esc(s.status)}</p><div class="small">${ev}</div>`;drawSess(s.pts||[])}
+function drawSess(p){const c=$('sChart'),x=c.getContext('2d'),d=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*d;c.height=h*d;x.setTransform(d,0,0,d,0,0);
+ const cs=getComputedStyle(document.documentElement),col=n=>cs.getPropertyValue(n).trim(),L=44,B=20,T=Math.max(p.length>1?p[p.length-2]:1,1),X=t=>L+t/T*(w-L-6),Y=a=>6+(45-a)/90*(h-B-6);x.font='11px system-ui';x.textAlign='right';
+ for(const a of[-40,-20,0,20,40]){x.strokeStyle=col('--line');x.beginPath();x.moveTo(L,Y(a));x.lineTo(w-6,Y(a));x.stroke();x.fillStyle=col('--muted');x.fillText(fmtS(a),L-4,Y(a)+4)}
+ x.strokeStyle=col('--warn');x.setLineDash([6,4]);[-20,20].forEach(a=>{x.beginPath();x.moveTo(L,Y(a));x.lineTo(w-6,Y(a));x.stroke()});x.setLineDash([]);
+ x.strokeStyle=col('--pri');x.lineWidth=2;x.beginPath();for(let i=0;i<p.length;i+=2)i?x.lineTo(X(p[i]),Y(p[i+1])):x.moveTo(X(p[i]),Y(p[i+1]));x.stroke();
+ x.fillStyle=col('--muted');x.textAlign='center';x.fillText('0:00',L,h-5);x.fillText(mmss(T),w-20,h-5);if(!p.length)x.fillText('No data',w/2,h/2)}
+// ---------- Patient ----------
+document.querySelectorAll('#plabel .rcard').forEach(b=>b.onclick=async()=>{const{error}=await sb.from('profiles').update({category:b.dataset.l}).eq('id',P.id);if(error)return toast(error.message);P.category=b.dataset.l;patHome()});
+async function patHome(){if(!P.category)return show('plabel');show('phome');$('pname').textContent=P.full_name;$('pcat').textContent='Age '+P.age+' | Profile label: '+P.category+' (research label, not a diagnosis)';
+ if(!codeInfo||new Date(codeInfo.expires_at)<new Date())await genCode();else drawCode();pollDocs();storage();mySessions();realtime()}
+async function genCode(){const{data,error}=await sb.rpc('create_pair_code');if(error)return toast(error.message);codeInfo=data[0];drawCode()}
+function drawCode(){const b=$('codeBox');if(!codeInfo){b.innerHTML='<p class="muted">No active code. Press Regenerate Code.</p>';return}
+ const left=Math.max(0,Math.floor((new Date(codeInfo.expires_at)-Date.now())/1000));
+ b.innerHTML=left?`<div class="code">${esc(codeInfo.code)}</div><p class="center small muted">Single use. Expires in ${mmss(left)}. Status: waiting for your doctor.</p>`:'<p class="muted">This code expired. Press Regenerate Code.</p>'}
+setInterval(()=>{if(P&&$('phome').classList.contains('on'))drawCode()},1000);
+$('cGen').onclick=genCode;$('cCopy').onclick=()=>{if(codeInfo)navigator.clipboard.writeText(codeInfo.code).then(()=>toast('Code copied.'))};
+async function pollDocs(){if(!P||P.role!=='patient')return;const{data}=await sb.from('profiles').select('id,full_name,clinic').eq('role','doctor');
+ if(data){if(data.length>lastDocs&&codeInfo){codeInfo=null;drawCode();toast('A doctor connected. Your code is no longer valid.')}lastDocs=data.length;
+  $('dList').innerHTML=data.length?data.map(d=>`<div class="row" style="margin-bottom:8px"><span class="grow">${esc(d.full_name)}<br><span class="small muted">${esc(d.clinic||'')}</span></span><button data-r="${d.id}">Revoke</button></div>`).join(''):'<p class="muted">No doctor connected yet.</p>'}}
+setInterval(()=>{if(P&&$('phome').classList.contains('on'))pollDocs()},5000);
+$('dList').onclick=async e=>{const id=e.target.dataset.r;if(!id||!confirm('Revoke this doctor\'s access to your data?'))return;const{error}=await sb.from('links').delete().eq('patient_id',P.id).eq('doctor_id',id);if(error)return toast(error.message);toast('Doctor access revoked.');pollDocs()};
+async function storage(){const{data}=await sb.rpc('my_storage_bytes');if(data==null)return;const mb=data/1048576;$('store').textContent=`Cloud storage used by your sessions: ${mb.toFixed(2)} MB`+(mb>STORAGE_SOFT_LIMIT_MB*.8?'. You are approaching the storage limit. Nothing is deleted automatically: review "My sessions" above and delete only what you choose.':'')}
+$('openMon').onclick=()=>{S.cat={id:P.category,c:'#0a7c86'};$('badge').textContent=P.category;$('badge').style.setProperty('--c','#0a7c86');show('mon');render()};
+$('back').onclick=async()=>{if(S.phase!=='idle'&&!confirm('Stop monitoring and return? Your session is saved.'))return;await sessEnd();if(S.phase!=='idle'){halt('idle');bleMon('stopped')}clearData();S.phase='idle';S.fresh='inactive';notice(null);patHome()};
+// ---------- Live updates (Supabase Realtime, respects RLS) and session deletion ----------
+let RT=null,curS=null,curP=null;
+function realtime(){if(RT||!sb||!P)return;const on=id=>$(id).classList.contains('on');
+ RT=sb.channel('eq-'+P.id)
+  .on('postgres_changes',{event:'*',schema:'public',table:'sessions'},()=>{if(on('doc'))loadPts();if(on('pdet')){if(curP)openPat(curP,true);if(curS)openSess(curS)}if(on('phome')){mySessions();storage()}})
+  .on('postgres_changes',{event:'*',schema:'public',table:'links'},()=>{if(on('doc'))loadPts();if(on('phome'))pollDocs()})
+  .subscribe()}
+async function mySessions(){const{data}=await sb.from('sessions').select('id,started_at,status,duration_s,source,event_count').eq('patient_id',P.id).order('started_at',{ascending:false}).limit(100);
+ $('mySess').innerHTML=data&&data.length?data.map(s=>`<div class="row" style="margin-bottom:8px"><span class="grow">${new Date(s.started_at).toLocaleString()}<br><span class="small muted">${esc(s.source)} | ${esc(s.status)} | ${mmss(s.duration_s||0)} | ${s.event_count||0} events</span></span><button data-del="${s.id}">Delete</button></div>`).join(''):'<p class="muted">No saved sessions yet.</p>'}
+$('mySess').onclick=async e=>{const id=e.target.dataset.del;if(!id)return;if(SESS&&SESS.id===id)return toast('This session is still recording. Stop it first.');
+ const{data:s}=await sb.from('sessions').select('started_at,duration_s,event_count,source').eq('id',id).single();if(!s)return;
+ if(!confirm(`Delete this session?\n\nStarted: ${new Date(s.started_at).toLocaleString()}\nSource: ${s.source}\nDuration: ${mmss(s.duration_s||0)}\nThreshold events: ${s.event_count||0}\n\nIts graph, statistics and events will be permanently removed and your doctor will no longer see it. Nothing else is deleted.`))return;
+ const{error}=await sb.from('sessions').delete().eq('id',id);if(error)return toast(error.message);toast('Session deleted.');mySessions();storage()};
+// ---------- Logout ----------
+$('lo').onclick=()=>$('dlg').showModal();$('dx').onclick=()=>$('dlg').close();
+async function out(){$('dlg').close();if(RT){sb.removeChannel(RT);RT=null}P=null;codeInfo=null;lastDocs=0;await sb.auth.signOut();show('roles')}
+$('keep').onclick=async()=>{await sessEnd();await out()};
+$('wipe').onclick=async()=>{const d=P.role==='doctor';
+ if(!confirm(d?'This permanently deletes your doctor account, profile and all links to your patients. Patients and their sessions are NOT deleted.':'This permanently deletes your account, profile, ALL your saved sessions and graphs, doctor connections and access codes.'))return;
+ if(prompt('Final confirmation. This cannot be undone. Type DELETE to continue.')!=='DELETE')return toast('Cancelled. Nothing was deleted.');
+ const{error}=await sb.rpc('delete_my_data');if(error)return toast(error.message);LS.del('eq_pending');SESS=null;await out();toast('Your data was deleted.')};
+// ---------- Session storage: hooks around the original monitoring code ----------
+const _start=start,_pause=pause,_resetS=resetS,_ing=ingest,_setSrc=setSrc;
+start=function(){_start();if(S.phase==='running'&&P&&P.role==='patient')sessBegin()};   // Start = NEW session
+pause=function(){_pause();if(SESS){SESS.status='paused';sessPush(SESS)}};               // Resume continues the SAME session
+resetS=function(){sessEnd();_resetS()};setSrc=function(s){if(s!==S.src)sessEnd();_setSrc(s)};
+ingest=function(a){_ing(a);if(SESS&&S.phase==='running'){const t=now();if(t-SESS.last>=.5){SESS.pts.push(+t.toFixed(1),+a.toFixed(1));SESS.last=t}}};
+function sessBegin(){SESS={id:crypto.randomUUID(),started:new Date().toISOString(),pts:[],last:-1,age:P.age,cat:P.category,src:S.src,status:'running'};sessPush(SESS)}
+function sessRow(s){const ev=S.evs.map(v=>({d:v.dir,at:v.at.toISOString(),p:+v.peak.toFixed(1),s:+((v.e===null?now():v.e)-v.s).toFixed(1)}));const done=s.status==='completed'||s.status==='interrupted';
+ return{id:s.id,patient_id:P.id,started_at:s.started,ended_at:done?new Date().toISOString():null,category:s.cat,age:s.age,source:s.src,status:s.status,max_pos:S.maxP,max_neg:S.maxN,event_count:S.count,duration_s:+now().toFixed(1),events:ev,pts:s.pts,updated_at:new Date().toISOString()}}
+async function sessPush(s){if(!s||!P)return;const r=sessRow(s);LS.set('eq_pending',JSON.stringify(r));   // survives refresh/offline
+ const{error}=await sb.from('sessions').upsert(r);                                        // same id = no duplicates
+ if(!error){const p=LS.get('eq_pending');if(p&&JSON.parse(p).id===r.id)LS.del('eq_pending')}}
+async function sessEnd(){const s=SESS;if(!s)return;SESS=null;s.status='completed';await sessPush(s)}
+async function flushPending(){const raw=LS.get('eq_pending');if(!raw||!P)return;try{const r=JSON.parse(raw);if(r.patient_id!==P.id)return;if(r.status==='running')r.status='interrupted';const{error}=await sb.from('sessions').upsert(r);if(!error)LS.del('eq_pending')}catch(e){}}
+setInterval(()=>{if(!SESS){flushPending();return}const st=S.phase==='running'?'running':S.phase==='paused'?'paused':S.phase==='interrupted'?'interrupted':SESS.status;SESS.status=st;sessPush(SESS)},10000);
+addEventListener('pagehide',()=>{if(SESS&&P){const r=sessRow(SESS);if(r.status==='running')r.status='interrupted';LS.set('eq_pending',JSON.stringify(r))}});
+// ---------- Boot ----------
+(async()=>{show('splash');await new Promise(r=>setTimeout(r,2400));
+ if(cfgOK){const{data}=await sb.auth.getSession();if(data.session){await enter(data.session.user);if(P)return}}
+ show('roles');if(!cfgOK)toast('Cloud is not configured yet. See README_cloud.md.')})();
+</script>
+</body>
+</html>
